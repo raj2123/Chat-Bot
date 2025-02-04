@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>RajGPT</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        #chat-container {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 20px;
+        }
+
+        #messages {
+            height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #eee;
+        }
+
+        .message {
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 4px;
+        }
+
+        .user-message {
+            background-color: #e3f2fd;
+        }
+
+        .ai-message {
+            background-color: #f5f5f5;
+        }
+
+        #loading {
+            display: none;
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="chat-container">
+        <h1>Chat with Raj The Knower</h1>
+        <div id="messages"></div>
+        <div id="loading">Raj is thinking .... wait for the lord to think...</div>
+        <form id="chat-form">
+            <input type="text" id="prompt" placeholder="Type your message..." autocomplete="off">
+            <button type="submit">Question Raj</button>
+        </form>
+    </div>
+
+    <script>
+        const form = document.getElementById('chat-form');
+        const promptInput = document.getElementById('prompt');
+        const messagesDiv = document.getElementById('messages');
+        const loadingDiv = document.getElementById('loading');
+    
+
+        function addMessage(message, isUser = true) {
+            // Replace common model names with "Raj"
+            message = message.replace(/DeepSeek-R1|GPT-4|Claude|Gemini|Llama|Mistral|OpenAI/g, 'Raj');
+            message = message.replace(/DeepSeek/g,"Raj The Creator");
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
+            messageDiv.innerHTML = `<strong>${isUser ? 'You' : 'Raj'}:</strong> ${message}`;
+            if (!isUser && promptInput.value.toLowerCase() === 'sagar bhai ki gf kab bane gi') {
+                message = "kabhi nahi ... facts only";
+            }
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+
+        async function handleSubmit(e) {
+            e.preventDefault();
+            const prompt = promptInput.value.trim();
+            if (!prompt) return;
+
+            promptInput.value = '';
+            addMessage(prompt, true);
+            loadingDiv.style.display = 'block';
+
+            try {
+                const response = await fetch('http://localhost:3000/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt })
+
+                });
+
+                if (!response.ok) throw new Error('Network response was not ok');
+
+                const data = await response.json();
+                addMessage(data.response, false);
+            } catch (error) {
+                console.error('Error:', error);
+                addMessage(`Error: ${error.message}`, false);
+            } finally {
+                loadingDiv.style.display = 'none';
+            }
+        }
+
+        form.addEventListener('submit', handleSubmit);
+    </script>
+</body>
+
+</html>
